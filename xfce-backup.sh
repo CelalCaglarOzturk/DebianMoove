@@ -4,7 +4,7 @@
 # for restore from backup use "./xfce-backup.sh restore"
 # while using restore, xfce4-backup.tar.gz have to be in the same directory with this script
 MODE=$1 # mode
-VERSION="0.0.3"
+VERSION="0.0.4"
 
 exists() {
   command -v "$1" >/dev/null 2>&1
@@ -50,6 +50,7 @@ if [ -z "$1" ]; then
     exit
 fi
 
+
 # main backup function
 backupmain() {
     #current themes
@@ -61,10 +62,6 @@ backupmain() {
     mkdir Theme && cp -r "/usr/share/themes/$THEME" ./Theme
     mkdir Icons && cp -r "/usr/share/icons/$ICON" ./Icons
     mkdir Cursor && cp -r "/usr/share/icons/$CURSOR" ./Cursor
-    cp -r "/usr/share/applications/firefox opt.desktop" ./out/firefox-opt.desktop
-    cp -r "/usr/share/code/" ./out/code
-    cp -r "/usr/share/cura/" ./out/cura
-    cp -r "/usr/share/filezilla/" ./out/filezilla
     cp "/home/$USER/.bash_history" ./out/.bash_history
     cp "/home/$USER/.bashrc" ./out/.bashrc
     cp "/home/$USER/.gtkrc-2.0" ./out/.gtkrc-2.0
@@ -72,6 +69,25 @@ backupmain() {
     cp -r "/home/$USER/.mozilla" ./out/.mozilla
     cp -r "/home/$USER/.icons" ./out/.icons
     cp -r "/home/$USER/.cache/mozilla" ./out/.cache/mozilla
+    cp -r "/usr/share/applications/firefox opt.desktop" ./out/firefox-opt.desktop
+    cp -r "/usr/share/code/" ./out/code
+    cp -r "/usr/share/cura/" ./out/cura
+    cp -r "/usr/share/filezilla/" ./out/filezilla
+    cp -r "/home/$USER/.config" ./out/.config
+    rm -r "./out/config/dconf"
+    rm -r "./out/config/gtk-3.0"
+    rm -r "./out/config/ibus"
+    rm -r "./out/config/Mousepad"
+    rm -r "./out/config/pulse"    
+    sudo cp -r "/etc/nala" ./out/etc/
+    sudo cp -r "/opt/firefox" ./out/opt/firefox
+    sudo cp -r "/etc/apt/" ./out/etc/apt
+    sudo rm "./out/etc/apt/sources.list.d/amdgpu.list"
+    sudo rm "./out/etc/apt/sources.list.d/docker.list"
+    sudo rm "./out/etc/apt/sources.list.d/element-io.list"
+    sudo rm "./out/etc/apt/sources.list.d/ookla_speedtest-cli.list"
+    sudo rm "./out/etc/apt/sources.list.d/rocm.list"
+    sudo rm "./out/etc/apt/sources.list.d/tailscale.list"
     echo "$THEME" >> ./Theme/currenttheme
     echo "$ICON" >> ./Icons/currenticon
     echo "$CURSOR" >> ./Cursor/currentcursor && echo "$CURSORSIZE" >> ./Cursor/currentsize

@@ -5,6 +5,9 @@ if [ "$EUID" -ne 0 ]; then
     echo "Please run as root or with sudo."
     exit 1
 fi
+# Add 32bit repos
+dpkg --add-architecture i386
+#sources list add
 
 # Update package lists
 apt update
