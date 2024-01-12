@@ -3,7 +3,7 @@ This script is made for save and load all of my Debian 12 (Xfce) packages, confi
 Usage:
 1. sudo bash postinstall.sh (it will get the requirements with apt)
 2. bash xfce-backup.sh backup (to backup configs)
-3. move the compressed file from /out to main folder
+3. Wait for the compressing (wathc the filesize)
 4. bash xfce-backup.sh restore (to install it on the new machine)
 5. All done!
 

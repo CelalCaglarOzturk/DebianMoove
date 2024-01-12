@@ -11,6 +11,7 @@ dpkg --add-architecture i386
 
 # Update package lists
 apt update
+# remove unwanted packages
 
 # Upgrade installed packages
 apt upgrade -y

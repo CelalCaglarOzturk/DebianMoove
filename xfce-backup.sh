@@ -106,10 +106,12 @@ backup() {
         backupmain
         echo "backup file successfully overwritten!"
         echo "Please check files inside archive to ensure backup files are correct"
+        echo "IF YOU SEE THIS MESSAGE IGNORE ERRORS"
     else
         backupmain
         echo "backup file successfully created!"
         echo "Please check files inside the archive to ensure backup files are correct"
+        echo "IF YOU SEE THIS MESSAGE IGNORE ERRORS"
     fi
 }
 
