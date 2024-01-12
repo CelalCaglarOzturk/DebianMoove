@@ -4,7 +4,7 @@
 # for restore from backup use "./xfce-backup.sh restore"
 # while using restore, xfce4-backup.tar.gz have to be in the same directory with this script
 MODE=$1 # mode
-VERSION="0.0.4"
+VERSION="0.0.6"
 
 exists() {
   command -v "$1" >/dev/null 2>&1
@@ -58,47 +58,51 @@ backupmain() {
     eval ICON="$(gsettings get org.gnome.desktop.interface icon-theme)"
     eval CURSOR="$(gsettings get org.gnome.desktop.interface cursor-theme)"
     eval CURSORSIZE="$(xfconf-query -c xsettings -p /Gtk/CursorThemeSize)"
-    cp -r "/$HOME/.config/xfce4/" .
-    mkdir Theme && cp -r "/usr/share/themes/$THEME" ./Theme
-    mkdir Icons && cp -r "/usr/share/icons/$ICON" ./Icons
-    mkdir Cursor && cp -r "/usr/share/icons/$CURSOR" ./Cursor
+    cp -r "/usr/share/themes/$THEME" ./out/Theme
+    mkdir "./out/Icons" && cp -r "/usr/share/icons/$ICON" ./out/Icons
+    cp -r "/usr/share/icons/$CURSOR" ./out/Cursor
+    #invididual files
     cp "/home/$USER/.bash_history" ./out/.bash_history
     cp "/home/$USER/.bashrc" ./out/.bashrc
     cp "/home/$USER/.gtkrc-2.0" ./out/.gtkrc-2.0
+    cp -r "/usr/share/applications/firefox-opt.desktop" ./out/firefox-opt.desktop
+    #Home
     cp -r "/home/$USER/.vscode" ./out/.vscode
     cp -r "/home/$USER/.mozilla" ./out/.mozilla
     cp -r "/home/$USER/.icons" ./out/.icons
     cp -r "/home/$USER/.cache/mozilla" ./out/.cache/mozilla
-    cp -r "/usr/share/applications/firefox opt.desktop" ./out/firefox-opt.desktop
+    cp -r "/home/$USER/.config" ./out/.config
+    #usr
     cp -r "/usr/share/code/" ./out/code
     cp -r "/usr/share/cura/" ./out/cura
     cp -r "/usr/share/filezilla/" ./out/filezilla
-    cp -r "/home/$USER/.config" ./out/.config
-    rm -r "./out/config/dconf"
-    rm -r "./out/config/gtk-3.0"
-    rm -r "./out/config/ibus"
-    rm -r "./out/config/Mousepad"
-    rm -r "./out/config/pulse"    
+    #etc
     sudo cp -r "/etc/nala" ./out/etc/
-    sudo cp -r "/opt/firefox" ./out/opt/firefox
     sudo cp -r "/etc/apt/" ./out/etc/apt
+    #opt
+    mkdir "./out/opt" && cp -r "/opt/firefox" ./out/opt/firefox
+    #Unwanted file removal
+    rm -r "./out/.config/dconf"
+    rm -r "./out/.config/gtk-3.0"
+    rm -r "./out/.config/ibus"
+    rm -r "./out/.config/Mousepad"
+    rm -r "./out/.config/pulse"    
     sudo rm "./out/etc/apt/sources.list.d/amdgpu.list"
     sudo rm "./out/etc/apt/sources.list.d/docker.list"
     sudo rm "./out/etc/apt/sources.list.d/element-io.list"
     sudo rm "./out/etc/apt/sources.list.d/ookla_speedtest-cli.list"
     sudo rm "./out/etc/apt/sources.list.d/rocm.list"
     sudo rm "./out/etc/apt/sources.list.d/tailscale.list"
-    echo "$THEME" >> ./Theme/currenttheme
-    echo "$ICON" >> ./Icons/currenticon
-    echo "$CURSOR" >> ./Cursor/currentcursor && echo "$CURSORSIZE" >> ./Cursor/currentsize
+    echo "$THEME" >> ./out/Theme/currenttheme
+    echo "$ICON" >> ./out/Icons/currenticon
+    echo "$CURSOR" >> ./out/Cursor/currentcursor && echo "$CURSORSIZE" >> ./out/Cursor/currentsize
     echo "$VERSION" >> version
-    tar -czf ./xfce4-backup.tar.gz xfce4 Theme Icons Cursor version
-    cp ./xfce4-backup.tar.gz "./out/"
-    rm -r xfce4 Theme Icons Cursor xfce4-backup.tar.gz version
+    tar --zstd -cf ./MooveNow.tar.zst out version
+    rm version
 }
 
 backup() {
-    if [ -f "./out/xfce4-backup.tar.gz" ]; then
+    if [ -f "./MooveNow.tar.zst" ]; then
         backupmain
         echo "backup file successfully overwritten!"
         echo "Please check files inside archive to ensure backup files are correct"
@@ -110,7 +114,7 @@ backup() {
 }
 
 restore() {
-    tar -xf ./xfce4-backup.tar.gz
+    tar --zstd -xf ./MooveNow.tar.zst
     THEME=$(cat ./Theme/currenttheme)
     ICON=$(cat ./Icons/currenticon)
     CURSOR=$(cat ./Cursor/currentcursor)
