@@ -4,7 +4,7 @@
 # for restore from backup use "./xfce-backup.sh restore"
 # while using restore, xfce4-backup.tar.gz have to be in the same directory with this script
 MODE=$1 # mode
-VERSION="0.1.0"
+VERSION="0.1.1"
 
 exists() {
   command -v "$1" >/dev/null 2>&1
@@ -62,12 +62,12 @@ backupmain() {
     mkdir "./out/Icons" && cp -r "/usr/share/icons/$ICON" ./out/Icons
     cp -r "/usr/share/icons/$CURSOR" ./out/Cursor
     #invididual files
-    cp "/home/$USER/.bash_history" ./out/.bash_history
-    cp "/home/$USER/.bashrc" ./out/.bashrc
-    cp "/home/$USER/.gtkrc-2.0" ./out/.gtkrc-2.0
+    cp "$HOME/.bash_history" ./out/.bash_history
+    cp "$HOME/.bashrc" ./out/.bashrc
+    cp "$HOME/.gtkrc-2.0" ./out/.gtkrc-2.0
     cp -r "/usr/share/applications/firefox-opt.desktop" ./out/firefox-opt.desktop
     #Home
-    cp -r "/home/$USER/.config" ./out/.config
+    cp -r "$HOME/.config" ./out/.config
     #usr
     cp -r "/usr/share/code/" ./out/code
     cp -r "/usr/share/cura/" ./out/cura
@@ -126,21 +126,21 @@ restore() {
     xfconf-query -c xsettings -p /Gtk/CursorThemeSize -s "$CURSORSIZE"
     cp -r ./out/.config "$HOME/"
     #invididual files
-    cp -r ./out/.bash_history "/home/$USER/"
-    cp -r ./out/.bashrc "/home/$USER/"
-    cp -r ./out/.gtkrc-2.0 "/home/$USER/"
+    cp -r ./out/.bash_history "$HOME/"
+    cp -r ./out/.bashrc "$HOME/"
+    cp -r ./out/.gtkrc-2.0 "$HOME/"
     sudo cp -r ./out/firefox-opt.desktop "/usr/share/applications/"
     #home
     cp -r ./out/.config "$HOME/"
     #usr
-    cp -r ./out/code/* "/usr/share/code/"
-    cp -r ./out/cura/* "/usr/share/cura/"
-    cp -r ./out/filezilla/* "/usr/share/filezilla/"
+    sudo mkdir -p "/usr/share/code" && cp -r ./out/code/* "/usr/share/code/"
+    sudo mkdir -p "/usr/share/cura/" && cp -r ./out/cura/* "/usr/share/cura/"
+    sudo mkdir -p "/usr/share/filezilla/" && cp -r ./out/filezilla/* "/usr/share/filezilla/"
     #etc
-    sudo cp -r ./out/etc/nala "/etc/"
+    sudo mkdir -p "/etc/nala" && cp -r ./out/etc/nala "/etc/"
     sudo cp -r ./out/etc/apt/* "/etc/apt/"
     #opt
-    sudo cp -r ./out/opt/firefox/* "/opt/firefox/"
+    sudo mkdir -p "/opt/firefox/" && cp -r ./out/opt/firefox/* "/opt/firefox/"
     echo "All of the configs successfully restored"
 }
 
