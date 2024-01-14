@@ -4,7 +4,7 @@
 # for restore from backup use "./xfce-backup.sh restore"
 # while using restore, xfce4-backup.tar.gz have to be in the same directory with this script
 MODE=$1 # mode
-VERSION="0.1.1"
+VERSION="0.1.3"
 
 exists() {
   command -v "$1" >/dev/null 2>&1
@@ -14,7 +14,13 @@ if exists gsettings; then
     :
 else
   echo 'Cannot detect gsettings'
-  echo "if you're on Debian you can install with libglib2.0-bin package from official repositories"
+  echo "Enabling 32bit repos"
+  echo "Installing libglib2.0-bin"
+  sudo dpkg --add-architecture i386
+  sudo apt update
+  sudo apt remove -y libreoffice*
+  sudo apt upgrade -y
+  sudo apt-get install -y libglib2.0-bin
   exit
 fi
 
@@ -61,23 +67,35 @@ backupmain() {
     cp -r "/usr/share/themes/$THEME" ./out/Theme
     mkdir "./out/Icons" && cp -r "/usr/share/icons/$ICON" ./out/Icons
     cp -r "/usr/share/icons/$CURSOR" ./out/Cursor
+
     #invididual files
+
     cp "$HOME/.bash_history" ./out/.bash_history
     cp "$HOME/.bashrc" ./out/.bashrc
     cp "$HOME/.gtkrc-2.0" ./out/.gtkrc-2.0
     cp -r "/usr/share/applications/firefox-opt.desktop" ./out/firefox-opt.desktop
+
     #Home
+
     cp -r "$HOME/.config" ./out/.config
+
     #usr
+
     cp -r "/usr/share/code/" ./out/code
     cp -r "/usr/share/cura/" ./out/cura
     cp -r "/usr/share/filezilla/" ./out/filezilla
+
     #etc
+
     sudo cp -r "/etc/nala" ./out/etc/
     sudo cp -r "/etc/apt/" ./out/etc/apt
+
     #opt
+
     mkdir "./out/opt" && cp -r "/opt/firefox" ./out/opt/firefox
+
     #Unwanted file removal
+
     rm -r "./out/.config/dconf"
     rm -r "./out/.config/gtk-3.0"
     rm -r "./out/.config/ibus"
@@ -111,7 +129,7 @@ backup() {
     fi
 }
 
-restore() {
+restore() {   
     tar --zstd -xf ./MooveNow.tar.zst
     THEME=$(cat ./Theme/currenttheme)
     ICON=$(cat ./Icons/currenticon)
@@ -124,27 +142,41 @@ restore() {
     xfconf-query -c xsettings -p /Net/IconThemeName -s "$ICON"
     xfconf-query -c xsettings -p /Gtk/CursorThemeName -s "$CURSOR"
     xfconf-query -c xsettings -p /Gtk/CursorThemeSize -s "$CURSORSIZE"
+
+    #DOOM THE EXISTING XFCE4 CONF (It causes duplicated launchers)
+
+    rm -r "/$HOME/.config/xfce4"
+
+    #COPY NEW CONF
+
     cp -r ./out/.config "$HOME/"
+
     #invididual files
+
     cp -r ./out/.bash_history "$HOME/"
     cp -r ./out/.bashrc "$HOME/"
     cp -r ./out/.gtkrc-2.0 "$HOME/"
     sudo cp -r ./out/firefox-opt.desktop "/usr/share/applications/"
-    #home
-    cp -r ./out/.config "$HOME/"
+
     #usr
-    sudo mkdir -p "/usr/share/code" && cp -r ./out/code/* "/usr/share/code/"
-    sudo mkdir -p "/usr/share/cura/" && cp -r ./out/cura/* "/usr/share/cura/"
-    sudo mkdir -p "/usr/share/filezilla/" && cp -r ./out/filezilla/* "/usr/share/filezilla/"
+
+    sudo mkdir -p "/usr/share/code" && sudo cp -r ./out/code/* "/usr/share/code/"
+    sudo mkdir -p "/usr/share/cura/" && sudo cp -r ./out/cura/* "/usr/share/cura/"
+    sudo mkdir -p "/usr/share/filezilla/" && sudo cp -r ./out/filezilla/* "/usr/share/filezilla/"
+
     #etc
-    sudo mkdir -p "/etc/nala" && cp -r ./out/etc/nala "/etc/"
+
+    sudo mkdir -p "/etc/nala" && sudo cp -r ./out/etc/nala "/etc/"
     sudo cp -r ./out/etc/apt/* "/etc/apt/"
+
     #opt
-    sudo mkdir -p "/opt/firefox/" && cp -r ./out/opt/firefox/* "/opt/firefox/"
+
+    sudo mkdir -p "/opt/firefox/" && sudo cp -r ./out/opt/firefox/* "/opt/firefox/"
     echo "All of the configs successfully restored"
 }
 
 # Check for the mode
+
 if [ "$MODE" = backup ]; then
     if [ -d "/$HOME/.config/xfce4/" ]; then
         # create an output file if it isn't exists

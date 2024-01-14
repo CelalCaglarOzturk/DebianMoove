@@ -24,8 +24,6 @@ install_command=$(printf "%s " "${packages[@]}")
 
 # Use the appropriate package manager for your system
 apt-get install -y $install_command  # For Debian/Ubuntu
-# yum install -y $install_command      # For CentOS/RHEL
-# brew install $install_command         # For macOS
 
 # Check if the installation was successful
 if [ $? -eq 0 ]; then
