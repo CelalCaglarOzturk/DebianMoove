@@ -4,7 +4,7 @@
 # for restore from backup use "./xfce-backup.sh restore"
 # while using restore, xfce4-backup.tar.gz have to be in the same directory with this script
 MODE=$1 # mode
-VERSION="0.0.6"
+VERSION="0.0.8"
 
 exists() {
   command -v "$1" >/dev/null 2>&1
@@ -117,7 +117,6 @@ restore() {
     ICON=$(cat ./Icons/currenticon)
     CURSOR=$(cat ./Cursor/currentcursor)
     CURSORSIZE=$(cat ./Cursor/currentsize)
-    cp -r xfce4 "$HOME/.config/"
     sudo cp -r "./Theme/$THEME" "/usr/share/themes/"
     sudo cp -r "./Icons/$ICON" "/usr/share/icons/"
     sudo cp -r "./Cursor/$CURSOR" "/usr/share/icons/"
@@ -125,8 +124,24 @@ restore() {
     xfconf-query -c xsettings -p /Net/IconThemeName -s "$ICON"
     xfconf-query -c xsettings -p /Gtk/CursorThemeName -s "$CURSOR"
     xfconf-query -c xsettings -p /Gtk/CursorThemeSize -s "$CURSORSIZE"
-    rm -r xfce4 Theme Icons Cursor
-    echo "xfce config and theme restored"
+    cp -r ./out/.config "$HOME/"
+    #invididual files
+    cp -r ./out/.bash_history "/home/$USER/"
+    cp -r ./out/.bashrc "/home/$USER/"
+    cp -r ./out/.gtkrc-2.0 "/home/$USER/"
+    cp -r ./out/firefox-opt.desktop "/usr/share/applications/"
+    #home
+    cp -r ./out/.config "$HOME/"
+    #usr
+    cp -r ./out/code/* "/usr/share/code/"
+    cp -r ./out/cura/* "/usr/share/cura/"
+    cp -r ./out/filezilla/* "/usr/share/filezilla/"
+    #etc
+    sudo cp -r ./out/etc/nala "/etc/"
+    sudo cp -r ./out/etc/apt/* "/etc/apt/"
+    #opt
+    cp -r ./out/opt/firefox/* "/opt/firefox/"
+    echo "All of the configs successfully restored"
 }
 
 # Check for the mode
