@@ -4,7 +4,7 @@
 # for restore from backup use "./xfce-backup.sh restore"
 # while using restore, xfce4-backup.tar.gz have to be in the same directory with this script
 MODE=$1 # mode
-VERSION="0.1.5"
+VERSION="0.2.0"
 
 exists() {
   command -v "$1" >/dev/null 2>&1
@@ -20,8 +20,25 @@ else
   sudo apt update
   sudo apt remove -y libreoffice*
   sudo apt upgrade -y
-  sudo apt-get install -y libglib2.0-bin
-  exit
+
+    # Define the packages to install
+
+    packages=("libglib2.0-bin" "okular" "smartmontools" "vlc" "radeontop" "pavucontrol" "qbittorrent" "filezilla" "openjdk-17-jre" "npm" "nodejs" "btop" "code" "wget" "git" "file-roller" "flameshot" "flatpak" "galculator" "gnome-disk-utility" "gparted" "baobab" "krita" "nala" "neofetch")
+
+    # Construct a single command to install all packages
+    
+    install_command=$(printf "%s " "${packages[@]}")
+
+    # Installation
+
+    sudo apt-get install -y $install_command
+
+    if [ $? -eq 0 ]; then
+        echo "Packages installed successfully."
+    else
+        echo "Failed to install packages."
+    fi
+        echo "Installation completed."
 fi
 
 if exists xfconf-query; then
