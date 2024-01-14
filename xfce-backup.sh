@@ -4,7 +4,7 @@
 # for restore from backup use "./xfce-backup.sh restore"
 # while using restore, xfce4-backup.tar.gz have to be in the same directory with this script
 MODE=$1 # mode
-VERSION="0.1.3"
+VERSION="0.1.5"
 
 exists() {
   command -v "$1" >/dev/null 2>&1
@@ -64,35 +64,35 @@ backupmain() {
     eval ICON="$(gsettings get org.gnome.desktop.interface icon-theme)"
     eval CURSOR="$(gsettings get org.gnome.desktop.interface cursor-theme)"
     eval CURSORSIZE="$(xfconf-query -c xsettings -p /Gtk/CursorThemeSize)"
-    cp -r "/usr/share/themes/$THEME" ./out/Theme
-    mkdir "./out/Icons" && cp -r "/usr/share/icons/$ICON" ./out/Icons
-    cp -r "/usr/share/icons/$CURSOR" ./out/Cursor
+    cp -rp "/usr/share/themes/$THEME" ./out/Theme
+    mkdir "./out/Icons" && cp -rp "/usr/share/icons/$ICON" ./out/Icons
+    cp -rp "/usr/share/icons/$CURSOR" ./out/Cursor
 
     #invididual files
 
     cp "$HOME/.bash_history" ./out/.bash_history
     cp "$HOME/.bashrc" ./out/.bashrc
     cp "$HOME/.gtkrc-2.0" ./out/.gtkrc-2.0
-    cp -r "/usr/share/applications/firefox-opt.desktop" ./out/firefox-opt.desktop
+    cp -rp "/usr/share/applications/firefox-opt.desktop" ./out/firefox-opt.desktop
 
     #Home
 
-    cp -r "$HOME/.config" ./out/.config
+    cp -rp "$HOME/.config" ./out/.config
 
     #usr
 
-    cp -r "/usr/share/code/" ./out/code
-    cp -r "/usr/share/cura/" ./out/cura
-    cp -r "/usr/share/filezilla/" ./out/filezilla
+    cp -rp "/usr/share/code/" ./out/code
+    cp -rp "/usr/share/cura/" ./out/cura
+    cp -rp "/usr/share/filezilla/" ./out/filezilla
 
     #etc
 
-    sudo cp -r "/etc/nala" ./out/etc/
-    sudo cp -r "/etc/apt/" ./out/etc/apt
+    sudo cp -rp "/etc/nala" ./out/etc/
+    sudo cp -rp "/etc/apt/" ./out/etc/apt
 
     #opt
 
-    mkdir "./out/opt" && cp -r "/opt/firefox" ./out/opt/firefox
+    mkdir "./out/opt" && cp -rp "/opt/firefox" ./out/opt/firefox
 
     #Unwanted file removal
 
@@ -107,6 +107,7 @@ backupmain() {
     sudo rm "./out/etc/apt/sources.list.d/ookla_speedtest-cli.list"
     sudo rm "./out/etc/apt/sources.list.d/rocm.list"
     sudo rm "./out/etc/apt/sources.list.d/tailscale.list"
+    sudo rm "./out/etc/apt/sources.list.d/xanmod-release.list"
     echo "$THEME" >> ./out/Theme/currenttheme
     echo "$ICON" >> ./out/Icons/currenticon
     echo "$CURSOR" >> ./out/Cursor/currentcursor && echo "$CURSORSIZE" >> ./out/Cursor/currentsize
@@ -131,47 +132,54 @@ backup() {
 
 restore() {   
     tar --zstd -xf ./MooveNow.tar.zst
+    #DOOM THE EXISTING XFCE4 CONF (It causes duplicated launchers)
+
+    rm -rf "/$HOME/.config/xfce4"
+    
+    #COPY NEW CONF
+
+    cp -rp ./out/.config "$HOME/"
+
+    #Theme stuff
+
     THEME=$(cat ./Theme/currenttheme)
     ICON=$(cat ./Icons/currenticon)
     CURSOR=$(cat ./Cursor/currentcursor)
     CURSORSIZE=$(cat ./Cursor/currentsize)
-    sudo cp -r "./Theme/$THEME" "/usr/share/themes/"
-    sudo cp -r "./Icons/$ICON" "/usr/share/icons/"
-    sudo cp -r "./Cursor/$CURSOR" "/usr/share/icons/"
+    sudo cp -rp "./Theme/$THEME" "/usr/share/themes/"
+    sudo cp -rp "./Icons/$ICON" "/usr/share/icons/"
+    sudo cp -rp "./Cursor/$CURSOR" "/usr/share/icons/"
     xfconf-query -c xsettings -p /Net/ThemeName -s "$THEME"
     xfconf-query -c xsettings -p /Net/IconThemeName -s "$ICON"
     xfconf-query -c xsettings -p /Gtk/CursorThemeName -s "$CURSOR"
     xfconf-query -c xsettings -p /Gtk/CursorThemeSize -s "$CURSORSIZE"
 
-    #DOOM THE EXISTING XFCE4 CONF (It causes duplicated launchers)
-
-    rm -r "/$HOME/.config/xfce4"
-
-    #COPY NEW CONF
-
-    cp -r ./out/.config "$HOME/"
-
     #invididual files
 
-    cp -r ./out/.bash_history "$HOME/"
-    cp -r ./out/.bashrc "$HOME/"
-    cp -r ./out/.gtkrc-2.0 "$HOME/"
-    sudo cp -r ./out/firefox-opt.desktop "/usr/share/applications/"
+    cp -rp ./out/.bash_history "$HOME/"
+    cp -rp ./out/.bashrc "$HOME/"
+    cp -rp ./out/.gtkrc-2.0 "$HOME/"
+    sudo cp -rp ./out/firefox-opt.desktop "/usr/share/applications/"
 
     #usr
 
-    sudo mkdir -p "/usr/share/code" && sudo cp -r ./out/code/* "/usr/share/code/"
-    sudo mkdir -p "/usr/share/cura/" && sudo cp -r ./out/cura/* "/usr/share/cura/"
-    sudo mkdir -p "/usr/share/filezilla/" && sudo cp -r ./out/filezilla/* "/usr/share/filezilla/"
+    sudo mkdir -p "/usr/share/code" && sudo cp -rp ./out/code/* "/usr/share/code/"
+    sudo mkdir -p "/usr/share/cura/" && sudo cp -rp ./out/cura/* "/usr/share/cura/"
+    sudo mkdir -p "/usr/share/filezilla/" && sudo cp -rp ./out/filezilla/* "/usr/share/filezilla/"
 
     #etc
 
-    sudo mkdir -p "/etc/nala" && sudo cp -r ./out/etc/nala "/etc/"
-    sudo cp -r ./out/etc/apt/* "/etc/apt/"
+    sudo mkdir -p "/etc/nala" && sudo cp -rp ./out/etc/nala "/etc/"
+    sudo cp -rp ./out/etc/apt/* "/etc/apt/"
 
     #opt
 
-    sudo mkdir -p "/opt/firefox/" && sudo cp -r ./out/opt/firefox/* "/opt/firefox/"
+    sudo mkdir -p "/opt/firefox/" && sudo cp -rp ./out/opt/firefox/* "/opt/firefox/"
+
+    #cleaning section
+
+    sudo apt autoremove -y
+    
     echo "All of the configs successfully restored"
 }
 
