@@ -4,7 +4,7 @@
 # for restore from backup use "./xfce-backup.sh restore"
 # while using restore, xfce4-backup.tar.gz have to be in the same directory with this script
 MODE=$1 # mode
-VERSION="0.0.8"
+VERSION="0.1.0"
 
 exists() {
   command -v "$1" >/dev/null 2>&1
@@ -129,7 +129,7 @@ restore() {
     cp -r ./out/.bash_history "/home/$USER/"
     cp -r ./out/.bashrc "/home/$USER/"
     cp -r ./out/.gtkrc-2.0 "/home/$USER/"
-    cp -r ./out/firefox-opt.desktop "/usr/share/applications/"
+    sudo cp -r ./out/firefox-opt.desktop "/usr/share/applications/"
     #home
     cp -r ./out/.config "$HOME/"
     #usr
@@ -140,7 +140,7 @@ restore() {
     sudo cp -r ./out/etc/nala "/etc/"
     sudo cp -r ./out/etc/apt/* "/etc/apt/"
     #opt
-    cp -r ./out/opt/firefox/* "/opt/firefox/"
+    sudo cp -r ./out/opt/firefox/* "/opt/firefox/"
     echo "All of the configs successfully restored"
 }
 
@@ -158,7 +158,7 @@ if [ "$MODE" = backup ]; then
         echo "couldn't find the config"
     fi
 elif [ "$MODE" = restore ]; then
-    if [ -f "./xfce4-backup.tar.gz" ]; then
+    if [ -f "./MooveNow.tar.zst" ]; then
         restore
     else
         echo "couldn't find the config"
