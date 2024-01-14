@@ -1,4 +1,4 @@
-                                #!/bin/bash
+ #!/bin/bash
 # usage of this script
 # for backup use "./xfce-backup.sh backup"
 # for restore from backup use "./xfce-backup.sh restore"
@@ -67,10 +67,6 @@ backupmain() {
     cp "/home/$USER/.gtkrc-2.0" ./out/.gtkrc-2.0
     cp -r "/usr/share/applications/firefox-opt.desktop" ./out/firefox-opt.desktop
     #Home
-    cp -r "/home/$USER/.vscode" ./out/.vscode
-    cp -r "/home/$USER/.mozilla" ./out/.mozilla
-    cp -r "/home/$USER/.icons" ./out/.icons
-    cp -r "/home/$USER/.cache/mozilla" ./out/.cache/mozilla
     cp -r "/home/$USER/.config" ./out/.config
     #usr
     cp -r "/usr/share/code/" ./out/code
