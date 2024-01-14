@@ -4,7 +4,7 @@
 # for restore from backup use "./xfce-backup.sh restore"
 # while using restore, xfce4-backup.tar.gz have to be in the same directory with this script
 MODE=$1 # mode
-VERSION="0.3.0"
+VERSION="0.3.1"
 
 exists() {
   command -v "$1" >/dev/null 2>&1
@@ -18,7 +18,7 @@ else
   echo "Installing libglib2.0-bin"
   sudo dpkg --add-architecture i386
   sudo apt update
-  sudo apt remove -y libreoffice*
+  sudo apt remove -y libreoffice* firefox-esr*
   sudo apt upgrade -y
 
     # Define the packages to install
@@ -39,7 +39,7 @@ else
 
     # Install from flatpak
 
-    flatpakPackages=("Flatseal" "Stremio" "Cura" "Vesktop" "Mission Center" "Grapejuice" "ProtonUp-Qt" "Piper" "JDownloader" "Signal Prism")
+    flatpakPackages=("Flatseal" "Stremio" "Cura" "Vesktop" "Mission Center" "Grapejuice" "Piper" "JDownloader" "Signal Prism")
 
     # unifying
 
@@ -49,6 +49,11 @@ else
 
     flatpak install $flatpakInstall -y
 fi
+
+#add a new mode called postinstall, flatpak etc obviously this code needs to run 2 times so create functions for it
+
+
+
 
 if exists xfconf-query; then
     :
@@ -86,6 +91,7 @@ fi
 # main backup function
 backupmain() {
     #current themes
+    
     eval THEME="$(gsettings get org.gnome.desktop.interface gtk-theme)"
     eval ICON="$(gsettings get org.gnome.desktop.interface icon-theme)"
     eval CURSOR="$(gsettings get org.gnome.desktop.interface cursor-theme)"
@@ -160,7 +166,7 @@ restore() {
     tar --zstd -xf ./MooveNow.tar.zst
     #DOOM THE EXISTING XFCE4 CONF (It causes duplicated launchers)
 
-    rm -rf "/$HOME/.config/xfce4/"
+    rm -r "/$HOME/.config/xfce4/"
     
     #COPY NEW CONF
 
