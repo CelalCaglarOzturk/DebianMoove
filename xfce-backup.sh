@@ -4,7 +4,7 @@
 # for restore from backup use "./xfce-backup.sh restore"
 # while using restore, xfce4-backup.tar.gz have to be in the same directory with this script
 MODE=$1 # mode
-VERSION="0.2.0"
+VERSION="0.3.0"
 
 exists() {
   command -v "$1" >/dev/null 2>&1
@@ -33,12 +33,21 @@ else
 
     sudo apt-get install -y $install_command
 
-    if [ $? -eq 0 ]; then
-        echo "Packages installed successfully."
-    else
-        echo "Failed to install packages."
-    fi
-        echo "Installation completed."
+    #flatpak section
+
+    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+    # Install from flatpak
+
+    flatpakPackages=("Flatseal" "Stremio" "Cura" "Vesktop" "Mission Center" "Grapejuice" "ProtonUp-Qt" "Piper" "JDownloader" "Signal Prism")
+
+    # unifying
+
+    flatpakInstall=$(printf "%s " "${flatpakPackages[@]}")
+
+    #Installation
+
+    flatpak install $flatpakInstall -y
 fi
 
 if exists xfconf-query; then
@@ -151,7 +160,7 @@ restore() {
     tar --zstd -xf ./MooveNow.tar.zst
     #DOOM THE EXISTING XFCE4 CONF (It causes duplicated launchers)
 
-    rm -rf "/$HOME/.config/xfce4"
+    rm -rf "/$HOME/.config/xfce4/"
     
     #COPY NEW CONF
 
