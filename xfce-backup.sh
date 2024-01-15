@@ -4,7 +4,7 @@
 # for restore from backup use "./xfce-backup.sh restore"
 # while using restore, xfce4-backup.tar.gz have to be in the same directory with this script
 MODE=$1 # mode
-VERSION="0.4.1"
+VERSION="0.4.2"
 
 exists() {
   command -v "$1" >/dev/null 2>&1
@@ -14,6 +14,7 @@ if exists gsettings; then
     :
 else
   echo 'Cannot detect gsettings, install libglib2.0-bin'
+  prepare
   exit
 fi
 
@@ -62,7 +63,7 @@ prepare(){
    
     sudo apt remove -y libreoffice*
   
-    # Packages to be installed
+    # Packages to be installed ISSUE APT SOURCES NEED TO BE UPDATED BEFORE THIS CODE RUNS
 
     packages=("libglib2.0-bin" "okular" "smartmontools" "vlc" "radeontop" "pavucontrol" "qbittorrent" "filezilla" "openjdk-17-jre" "npm" "nodejs" "btop" "code" "wget" "git" "file-roller" "flameshot" "flatpak" "galculator" "gnome-disk-utility" "gparted" "baobab" "krita" "nala" "neofetch")  
    
@@ -84,7 +85,7 @@ fi
 
 flatpak(){    
 
-    # add flathub repos
+    # add flathub repos IT NEEDS RESTART OF THE SYSTEM
 
     flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
@@ -179,6 +180,7 @@ backupmain() {
     echo "$VERSION" >> version
     tar --zstd -cf ./MooveNow.tar.zst out version
     rm version
+    sudo rm -r ./out/
 }
 
 backup() {
@@ -269,13 +271,11 @@ elif [ "$MODE" = restore ]; then
 elif [ "$MODE" = prepare ]; then
     prepare
     else
-        echo "couldn't find the config"
-    fi
-elif [ "$MODE" = flatpak ]; then
-    flatpak
-    else
-        echo "couldn't find the config"
-    fi
-else
     echo "error '$MODE' is not an argument use 'prepare' 'backup' 'restore' 'flatpak'"
+    fi
+if [ "$MODE" = flatpak ]; then
+  flatpak
+   else
+  :
 fi
+
