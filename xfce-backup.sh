@@ -4,7 +4,7 @@
 # for restore from backup use "./xfce-backup.sh restore"
 # while using restore, xfce4-backup.tar.gz have to be in the same directory with this script
 MODE=$1 # mode
-VERSION="0.4.0"
+VERSION="0.4.1"
 
 exists() {
   command -v "$1" >/dev/null 2>&1
@@ -37,7 +37,7 @@ else
     echo 'Cannot detect gzip'
 fi
 
-if [ "$(id -u)" == 0 ]; then
+if [ "$(id -u)" = 0 ]; then
     echo 'you must use this script as home user'
     exit
 else
@@ -74,6 +74,10 @@ prepare(){
 
     sudo apt upgrade -y $install_command
 
+    if [ $? -ne 0 ]; then
+    echo 'Package installation failed. Exiting.'
+    exit 1
+fi
 }
 
 # flatpak function
@@ -105,7 +109,11 @@ flatpak(){
     #Installation
 
     for package in "${packages[@]}"; do
-     flatpak install -y $package
+    flatpak install -y $package
+    if [ $? -ne 0 ]; then
+        echo "Error installing $package. Exiting."
+        exit 1
+    fi
     done
     echo "Flatpak packages installed successfully."
 
@@ -174,7 +182,7 @@ backupmain() {
 }
 
 backup() {
-    if [ -f "./MooveNow.tar.zst" ]; then
+    if [ -f "./MooveNow.tar.zst" ] && [ -s "./MooveNow.tar.zst" ]; then
         backupmain
         echo "backup file successfully overwritten!"
         echo "Please check files inside archive to ensure backup files are correct"
