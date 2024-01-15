@@ -4,7 +4,7 @@
 # for restore from backup use "./xfce-backup.sh restore"
 # while using restore, xfce4-backup.tar.gz have to be in the same directory with this script
 MODE=$1 # mode
-VERSION="0.3.1"
+VERSION="0.4.0"
 
 exists() {
   command -v "$1" >/dev/null 2>&1
@@ -13,47 +13,9 @@ exists() {
 if exists gsettings; then
     :
 else
-  echo 'Cannot detect gsettings'
-  echo "Enabling 32bit repos"
-  echo "Installing libglib2.0-bin"
-  sudo dpkg --add-architecture i386
-  sudo apt update
-  sudo apt remove -y libreoffice* firefox-esr*
-  sudo apt upgrade -y
-
-    # Define the packages to install
-
-    packages=("libglib2.0-bin" "okular" "smartmontools" "vlc" "radeontop" "pavucontrol" "qbittorrent" "filezilla" "openjdk-17-jre" "npm" "nodejs" "btop" "code" "wget" "git" "file-roller" "flameshot" "flatpak" "galculator" "gnome-disk-utility" "gparted" "baobab" "krita" "nala" "neofetch")
-
-    # Construct a single command to install all packages
-    
-    install_command=$(printf "%s " "${packages[@]}")
-
-    # Installation
-
-    sudo apt-get install -y $install_command
-
-    #flatpak section
-
-    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-
-    # Install from flatpak
-
-    flatpakPackages=("Flatseal" "Stremio" "Cura" "Vesktop" "Mission Center" "Grapejuice" "Piper" "JDownloader" "Signal Prism")
-
-    # unifying
-
-    flatpakInstall=$(printf "%s " "${flatpakPackages[@]}")
-
-    #Installation
-
-    flatpak install $flatpakInstall -y
+  echo 'Cannot detect gsettings, install libglib2.0-bin'
+  exit
 fi
-
-#add a new mode called postinstall, flatpak etc obviously this code needs to run 2 times so create functions for it
-
-
-
 
 if exists xfconf-query; then
     :
@@ -87,9 +49,72 @@ if [ -z "$1" ]; then
     exit
 fi
 
+# prepare function
+
+prepare(){
+   
+    #enable 32bit repos
+   
+    sudo dpkg --add-architecture i386
+    sudo apt update
+   
+    #remove unwanted packages
+   
+    sudo apt remove -y libreoffice*
+  
+    # Packages to be installed
+
+    packages=("libglib2.0-bin" "okular" "smartmontools" "vlc" "radeontop" "pavucontrol" "qbittorrent" "filezilla" "openjdk-17-jre" "npm" "nodejs" "btop" "code" "wget" "git" "file-roller" "flameshot" "flatpak" "galculator" "gnome-disk-utility" "gparted" "baobab" "krita" "nala" "neofetch")  
+   
+    # Unify packages
+
+    install_command=$(printf "%s " "${packages[@]}")
+
+    # Installation
+
+    sudo apt upgrade -y $install_command
+
+}
+
+# flatpak function
+
+flatpak(){    
+
+    # add flathub repos
+
+    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+    # Packages to be installed
+
+    packages=(
+    com.ultimaker.cura  
+    com.github.tchx84.Flatseal
+    com.stremio.Stremio
+    dev.vencord.Vesktop
+    io.beekeeperstudio.Studio
+    io.missioncenter.MissionCenter
+    org.freedesktop.Piper
+    net.davidotek.pupgui2
+    org.jdownloader.JDownloader
+    net.brinkervii.grapejuice
+    org.onlyoffice.desktopeditors
+    org.prismlauncher.PrismLauncher
+    org.signal.Signal
+    )
+
+    #Installation
+
+    for package in "${packages[@]}"; do
+     flatpak install -y $package
+    done
+    echo "Flatpak packages installed successfully."
+
+}
 
 # main backup function
+
 backupmain() {
+
     #current themes
     
     eval THEME="$(gsettings get org.gnome.desktop.interface gtk-theme)"
@@ -153,12 +178,10 @@ backup() {
         backupmain
         echo "backup file successfully overwritten!"
         echo "Please check files inside archive to ensure backup files are correct"
-        echo "IF YOU SEE THIS MESSAGE IGNORE ERRORS"
     else
         backupmain
         echo "backup file successfully created!"
         echo "Please check files inside the archive to ensure backup files are correct"
-        echo "IF YOU SEE THIS MESSAGE IGNORE ERRORS"
     fi
 }
 
@@ -235,6 +258,16 @@ elif [ "$MODE" = restore ]; then
     else
         echo "couldn't find the config"
     fi
+elif [ "$MODE" = prepare ]; then
+    prepare
+    else
+        echo "couldn't find the config"
+    fi
+elif [ "$MODE" = flatpak ]; then
+    flatpak
+    else
+        echo "couldn't find the config"
+    fi
 else
-    echo "error '$MODE' is not an argument use 'backup' or 'restore'"
+    echo "error '$MODE' is not an argument use 'prepare' 'backup' 'restore' 'flatpak'"
 fi
