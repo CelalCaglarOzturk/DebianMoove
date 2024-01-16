@@ -4,10 +4,41 @@
 # for restore from backup use "./xfce-backup.sh restore"
 # while using restore, xfce4-backup.tar.gz have to be in the same directory with this script
 MODE=$1 # mode
-VERSION="0.4.2"
+VERSION="0.5.0"
 
 exists() {
   command -v "$1" >/dev/null 2>&1
+}
+
+# prepare function
+
+prepare(){
+   
+    #enable 32bit repos
+   
+    sudo dpkg --add-architecture i386
+    sudo apt update
+   
+    #remove unwanted packages
+   
+    sudo apt remove -y libreoffice*
+  
+    # Packages to be installed ISSUE APT SOURCES NEED TO BE UPDATED BEFORE THIS CODE RUNS
+
+    packages=("libglib2.0-bin" "okular" "smartmontools" "vlc" "radeontop" "pavucontrol" "qbittorrent" "filezilla" "openjdk-17-jre" "npm" "nodejs" "btop" "wget" "git" "file-roller" "flameshot" "flatpak" "galculator" "gnome-disk-utility" "gparted" "baobab" "krita" "nala" "neofetch")  
+   
+    # Unify packages
+
+    install_command=$(printf "%s " "${packages[@]}")
+
+    # Installation
+
+    sudo apt upgrade -y $install_command
+
+    if [ $? -ne 0 ]; then
+    echo 'Package installation failed. Exiting.'
+    exit
+fi
 }
 
 if exists gsettings; then
@@ -15,7 +46,6 @@ if exists gsettings; then
 else
   echo 'Cannot detect gsettings, install libglib2.0-bin'
   prepare
-  exit
 fi
 
 if exists xfconf-query; then
@@ -38,7 +68,7 @@ else
     echo 'Cannot detect gzip'
 fi
 
-if [ "$(id -u)" = 0 ]; then
+if [ "$(id -u)" == 0 ]; then
     echo 'you must use this script as home user'
     exit
 else
@@ -50,36 +80,6 @@ if [ -z "$1" ]; then
     exit
 fi
 
-# prepare function
-
-prepare(){
-   
-    #enable 32bit repos
-   
-    sudo dpkg --add-architecture i386
-    sudo apt update
-   
-    #remove unwanted packages
-   
-    sudo apt remove -y libreoffice*
-  
-    # Packages to be installed ISSUE APT SOURCES NEED TO BE UPDATED BEFORE THIS CODE RUNS
-
-    packages=("libglib2.0-bin" "okular" "smartmontools" "vlc" "radeontop" "pavucontrol" "qbittorrent" "filezilla" "openjdk-17-jre" "npm" "nodejs" "btop" "code" "wget" "git" "file-roller" "flameshot" "flatpak" "galculator" "gnome-disk-utility" "gparted" "baobab" "krita" "nala" "neofetch")  
-   
-    # Unify packages
-
-    install_command=$(printf "%s " "${packages[@]}")
-
-    # Installation
-
-    sudo apt upgrade -y $install_command
-
-    if [ $? -ne 0 ]; then
-    echo 'Package installation failed. Exiting.'
-    exit 1
-fi
-}
 
 # flatpak function
 
@@ -268,14 +268,5 @@ elif [ "$MODE" = restore ]; then
     else
         echo "couldn't find the config"
     fi
-elif [ "$MODE" = prepare ]; then
-    prepare
-    else
-    echo "error '$MODE' is not an argument use 'prepare' 'backup' 'restore' 'flatpak'"
-    fi
-if [ "$MODE" = flatpak ]; then
-  flatpak
-   else
-  :
 fi
 
