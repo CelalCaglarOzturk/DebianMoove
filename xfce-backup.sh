@@ -4,7 +4,7 @@
 # for restore from backup use "./xfce-backup.sh restore"
 # while using restore, xfce4-backup.tar.gz have to be in the same directory with this script
 MODE=$1 # mode
-VERSION="0.5.0"
+VERSION="0.5.1"
 
 exists() {
   command -v "$1" >/dev/null 2>&1
@@ -23,7 +23,7 @@ prepare(){
    
     sudo apt remove -y libreoffice*
   
-    # Packages to be installed ISSUE APT SOURCES NEED TO BE UPDATED BEFORE THIS CODE RUNS
+    # Packages to be installed
 
     packages=("libglib2.0-bin" "okular" "smartmontools" "vlc" "radeontop" "pavucontrol" "qbittorrent" "filezilla" "openjdk-17-jre" "npm" "nodejs" "btop" "wget" "git" "file-roller" "flameshot" "flatpak" "galculator" "gnome-disk-utility" "gparted" "baobab" "krita" "nala" "neofetch")  
    
@@ -66,6 +66,7 @@ if exists gzip; then
     :
 else
     echo 'Cannot detect gzip'
+    exit
 fi
 
 if [ "$(id -u)" == 0 ]; then
@@ -88,6 +89,7 @@ flatpak(){
     # add flathub repos IT NEEDS RESTART OF THE SYSTEM
 
     flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+    flatpak update
 
     # Packages to be installed
 
