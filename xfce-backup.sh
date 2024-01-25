@@ -1,31 +1,31 @@
- #!/bin/bash
+#!/bin/bash
 # usage of this script
 # for backup use "./xfce-backup.sh backup"
 # for restore from backup use "./xfce-backup.sh restore"
-# while using restore, xfce4-backup.tar.gz have to be in the same directory with this script
+# while using restore, MooveNow.tar.zst have to be in the same directory with this script
 MODE=$1 # mode
-VERSION="0.5.1"
+VERSION="0.6.0"
 
 exists() {
   command -v "$1" >/dev/null 2>&1
 }
 
-# prepare function
+# Prepare function
 
 prepare(){
    
-    #enable 32bit repos
+    # Enable 32bit repos
    
     sudo dpkg --add-architecture i386
     sudo apt update
    
-    #remove unwanted packages
+    # Remove unwanted packages
    
     sudo apt remove -y libreoffice*
   
     # Packages to be installed
 
-    packages=("libglib2.0-bin" "okular" "smartmontools" "vlc" "radeontop" "pavucontrol" "qbittorrent" "filezilla" "openjdk-17-jre" "npm" "nodejs" "btop" "wget" "git" "file-roller" "flameshot" "flatpak" "galculator" "gnome-disk-utility" "gparted" "baobab" "krita" "nala" "neofetch")  
+    packages=("libglib2.0-bin" "gpg" "apt-transport-https" "lutris" "qemu-kvm" "libvirt-clients" "libvirt-daemon-system" "bridge-utils" "virtinst" "libvirt-daemon" "steam-installer" "steam-devices" "okular" "pipewire" "pipewire-pulse" "wireplumber" "vlc" "radeontop" "gamemode" "mangohud" "timeshift" "qbittorrent" "filezilla" "openjdk-17-jre" "npm" "nodejs" "btop" "wget" "git" "file-roller" "flameshot" "flatpak" "galculator" "gnome-disk-utility" "gparted" "baobab" "neofetch")  
    
     # Unify packages
 
@@ -34,6 +34,36 @@ prepare(){
     # Installation
 
     sudo apt upgrade -y $install_command
+
+    # vm network set
+
+    sudo virsh net-start default
+    sudo virsh net-autostart default
+
+    # Add Repo section
+
+    # Vscode
+
+    wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
+    sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
+    sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
+    rm -f packages.microsoft.gpg
+    
+    # Wine
+    
+    sudo wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/debian/dists/bookworm/winehq-bookworm.sources
+    sudo apt update -y
+    
+    # Tailscale
+
+    curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+    curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
+
+    #additional installation
+
+    sudo apt update
+    sudo apt install code tailscale -y
+    sudo apt install --install-recommends winehq-staging -y
 
     if [ $? -ne 0 ]; then
     echo 'Package installation failed. Exiting.'
@@ -93,32 +123,9 @@ flatpak(){
 
     # Packages to be installed
 
-    packages=(
-    com.ultimaker.cura  
-    com.github.tchx84.Flatseal
-    com.stremio.Stremio
-    dev.vencord.Vesktop
-    io.beekeeperstudio.Studio
-    io.missioncenter.MissionCenter
-    org.freedesktop.Piper
-    net.davidotek.pupgui2
-    org.jdownloader.JDownloader
-    net.brinkervii.grapejuice
-    org.onlyoffice.desktopeditors
-    org.prismlauncher.PrismLauncher
-    org.signal.Signal
-    )
-
-    #Installation
-
-    for package in "${packages[@]}"; do
-    flatpak install -y $package
-    if [ $? -ne 0 ]; then
-        echo "Error installing $package. Exiting."
-        exit 1
-    fi
-    done
-    echo "Flatpak packages installed successfully."
+    flatpak install "org.nomacs.ImageLounge com.ultimaker.cura com.github.tchx84.Flatseal com.stremio.Stremio dev.vencord.Vesktop io.beekeeperstudio.Studio io.missioncenter.MissionCenter org.freedesktop.Piper net.davidotek.pupgui2 org.jdownloader.JDownloader net.brinkervii.grapejuice org.onlyoffice.desktopeditors org.prismlauncher.PrismLauncher org.signal.Signal"
+  
+  echo "Flatpak packages installed successfully. You may need to reboot your pc!"
 
 }
 
@@ -155,7 +162,6 @@ backupmain() {
 
     #etc
 
-    sudo cp -rp "/etc/nala" ./out/etc/
     sudo cp -rp "/etc/apt/" ./out/etc/apt
 
     #opt
@@ -169,11 +175,6 @@ backupmain() {
     rm -r "./out/.config/ibus"
     rm -r "./out/.config/Mousepad"
     rm -r "./out/.config/pulse"    
-    sudo rm "./out/etc/apt/sources.list.d/amdgpu.list"
-    sudo rm "./out/etc/apt/sources.list.d/docker.list"
-    sudo rm "./out/etc/apt/sources.list.d/element-io.list"
-    sudo rm "./out/etc/apt/sources.list.d/ookla_speedtest-cli.list"
-    sudo rm "./out/etc/apt/sources.list.d/rocm.list"
     sudo rm "./out/etc/apt/sources.list.d/tailscale.list"
     sudo rm "./out/etc/apt/sources.list.d/xanmod-release.list"
     echo "$THEME" >> ./out/Theme/currenttheme
@@ -236,10 +237,9 @@ restore() {
 
     #etc
 
-    sudo mkdir -p "/etc/nala" && sudo cp -rp ./out/etc/nala "/etc/"
     sudo cp -rp ./out/etc/apt/* "/etc/apt/"
 
-    #opt
+    opt
 
     sudo mkdir -p "/opt/firefox/" && sudo cp -rp ./out/opt/firefox/* "/opt/firefox/"
 
@@ -267,6 +267,7 @@ if [ "$MODE" = backup ]; then
 elif [ "$MODE" = restore ]; then
     if [ -f "./MooveNow.tar.zst" ]; then
         restore
+        flatpak
     else
         echo "couldn't find the config"
     fi
