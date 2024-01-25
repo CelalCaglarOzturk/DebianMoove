@@ -4,7 +4,7 @@
 # for restore from backup use "./xfce-backup.sh restore"
 # while using restore, MooveNow.tar.zst have to be in the same directory with this script
 MODE=$1 # mode
-VERSION="0.6.0"
+VERSION="0.6.1"
 
 exists() {
   command -v "$1" >/dev/null 2>&1
@@ -148,6 +148,9 @@ backupmain() {
     cp "$HOME/.bash_history" ./out/.bash_history
     cp "$HOME/.bashrc" ./out/.bashrc
     cp "$HOME/.gtkrc-2.0" ./out/.gtkrc-2.0
+    cp "$HOME/.gitconfig" ./out/.gitconfig
+    cp "$HOME/cab" ./out/cab
+    cp "$HOME/cab.pub" ./out/cab.pub
     cp -rp "/usr/share/applications/firefox-opt.desktop" ./out/firefox-opt.desktop
 
     #Home
@@ -227,6 +230,9 @@ restore() {
     cp -rp ./out/.bash_history "$HOME/"
     cp -rp ./out/.bashrc "$HOME/"
     cp -rp ./out/.gtkrc-2.0 "$HOME/"
+    cp -rp ./out/.gitconfig "$HOME/" 
+    cp -rp ./out/cab "$HOME/"
+    cp -rp ./out/cab.pub "$HOME/"
     sudo cp -rp ./out/firefox-opt.desktop "/usr/share/applications/"
 
     #usr
