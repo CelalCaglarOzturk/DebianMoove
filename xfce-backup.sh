@@ -4,7 +4,7 @@
 # for restore from backup use "./xfce-backup.sh restore"
 # while using restore, MooveNow.tar.zst have to be in the same directory with this script
 MODE=$1 # mode
-VERSION="0.6.1"
+VERSION="0.6.2"
 
 exists() {
   command -v "$1" >/dev/null 2>&1
@@ -13,7 +13,9 @@ exists() {
 # Prepare function
 
 prepare(){
-   
+    
+    # Adding contrib non-free to apt sources
+    sudo cp -rp sources.list "/etc/apt/"
     # Enable 32bit repos
    
     sudo dpkg --add-architecture i386
@@ -23,9 +25,9 @@ prepare(){
    
     sudo apt remove -y libreoffice*
   
-    # Packages to be installed
+    # Packages to be installed 
 
-    packages=("libglib2.0-bin" "gpg" "apt-transport-https" "lutris" "qemu-kvm" "libvirt-clients" "libvirt-daemon-system" "bridge-utils" "virtinst" "libvirt-daemon" "steam-installer" "steam-devices" "okular" "pipewire" "pipewire-pulse" "wireplumber" "vlc" "radeontop" "gamemode" "mangohud" "timeshift" "qbittorrent" "filezilla" "openjdk-17-jre" "npm" "nodejs" "btop" "wget" "git" "file-roller" "flameshot" "flatpak" "galculator" "gnome-disk-utility" "gparted" "baobab" "neofetch")  
+    packages=("libglib2.0-bin" "gpg" "lutris" "steam-installer" "apt-transport-https" "qemu-kvm" "libvirt-clients" "libvirt-daemon-system" "bridge-utils" "virtinst" "libvirt-daemon" "steam-devices" "okular" "pipewire" "pipewire-pulse" "wireplumber" "vlc" "radeontop" "gamemode" "mangohud" "timeshift" "qbittorrent" "filezilla" "openjdk-17-jre" "npm" "nodejs" "btop" "wget" "git" "file-roller" "flameshot" "flatpak" "galculator" "gnome-disk-utility" "gparted" "baobab" "neofetch")  
    
     # Unify packages
 
@@ -50,7 +52,8 @@ prepare(){
     rm -f packages.microsoft.gpg
     
     # Wine
-    
+    sudo mkdir -pm755 /etc/apt/keyrings
+    sudo wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key
     sudo wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/debian/dists/bookworm/winehq-bookworm.sources
     sudo apt update -y
     
@@ -59,13 +62,24 @@ prepare(){
     curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
     curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
 
-    #additional installation
+    #additional installation !TEST
 
     sudo apt update
     sudo apt install code tailscale -y
     sudo apt install --install-recommends winehq-staging -y
 
+    # Add flathub repos IT NEEDS RESTART OF THE SYSTEM !TEST
+
+    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+    flatpak update
+
+    # Packages to be installed !TEST
+
+    flatpak install "org.nomacs.ImageLounge/x86_64/stable com.ultimaker.cura com.github.tchx84.Flatseal com.stremio.Stremio dev.vencord.Vesktop io.beekeeperstudio.Studio io.missioncenter.MissionCenter org.freedesktop.Piper net.davidotek.pupgui2 org.jdownloader.JDownloader net.brinkervii.grapejuice org.onlyoffice.desktopeditors org.prismlauncher.PrismLauncher org.signal.Signal"
+    echo "Flatpak packages installed successfully. You may need to reboot your pc!"
+  
     if [ $? -ne 0 ]; then
+
     echo 'Package installation failed. Exiting.'
     exit
 fi
@@ -111,23 +125,6 @@ if [ -z "$1" ]; then
     exit
 fi
 
-
-# flatpak function
-
-flatpak(){    
-
-    # add flathub repos IT NEEDS RESTART OF THE SYSTEM
-
-    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-    flatpak update
-
-    # Packages to be installed
-
-    flatpak install "org.nomacs.ImageLounge com.ultimaker.cura com.github.tchx84.Flatseal com.stremio.Stremio dev.vencord.Vesktop io.beekeeperstudio.Studio io.missioncenter.MissionCenter org.freedesktop.Piper net.davidotek.pupgui2 org.jdownloader.JDownloader net.brinkervii.grapejuice org.onlyoffice.desktopeditors org.prismlauncher.PrismLauncher org.signal.Signal"
-  
-  echo "Flatpak packages installed successfully. You may need to reboot your pc!"
-
-}
 
 # main backup function
 
@@ -243,9 +240,9 @@ restore() {
 
     #etc
 
-    sudo cp -rp ./out/etc/apt/* "/etc/apt/"
+    sudo cp -rp ./out/etc/apt/ "/etc/apt/"
 
-    opt
+    #opt
 
     sudo mkdir -p "/opt/firefox/" && sudo cp -rp ./out/opt/firefox/* "/opt/firefox/"
 
@@ -273,7 +270,6 @@ if [ "$MODE" = backup ]; then
 elif [ "$MODE" = restore ]; then
     if [ -f "./MooveNow.tar.zst" ]; then
         restore
-        flatpak
     else
         echo "couldn't find the config"
     fi
